@@ -1,0 +1,115 @@
+#EDA:
+
+#playing around with a few different bar plots
+hist(SL_data$SL_days_per_week_f)
+hist(SL_data$SL_duration_f)
+hist(SL_data$SL_session_affordability_a)
+
+hist(NSL_data$NSL_not_affordable_a)
+
+NSL_data_no_missing$NSL_not_affordable_a<- factor(NSL_data_no_missing$NSL_not_affordable_a)
+
+ggplot(data= NSL_data_no_missing)+
+  geom_bar(aes(NSL_not_affordable_a))+
+  scale_x_discrete(labels = c("2"="Agree","3"="Somewhat agree", "4"="Somewhat disagree",
+                              "5" = "Disagree", "6"="Strongly disagree"))+
+  labs(
+    title = "Affordability for families whose children aren't attending Speech Language Therapy",
+    x = "Speech Language therapy services are affordable"
+  )
+
+#Creating a data frame with affordability for both SL and NSL
+nsl<-c()
+sl<-c()
+agreement<- 1:6
+for(i in 1:6){
+nsl[i]<-dim(NSL_data_no_missing %>% filter(NSL_not_affordable_a==i))[1]
+sl[i]<- dim(SL_data %>% filter(SL_session_affordability_a ==i))[1]
+}
+
+affordability_agreement<- data.frame(agreement,nsl,sl)
+affordability_agreement<- affordability_agreement %>% pivot_longer(
+                        cols=nsl:sl,
+                        values_to = "frequency",
+                        names_to="attends_SL"
+)
+
+affordability_agreement$frequency<- ifelse(affordability_agreement$attends_SL=="sl",
+                                    (affordability_agreement$frequency/68)*100,
+                                    (affordability_agreement$frequency/40)*100)
+
+affordability_agreement<- affordability_agreement %>% rename(
+                                                      Percentage = frequency
+)
+  
+affordability_agreement$agreement <- factor(affordability_agreement$agreement)
+ggplot(data = affordability_agreement, aes(agreement, Percentage,fill = attends_SL))+
+  geom_bar(stat="identity", position='dodge')+
+  scale_x_discrete(labels= c("1"="Strongly agree", "2"="Agree",
+                             "3"="Somewhat agree","4"="Somewhat disagree",
+                             "5"="Disagree", "6"="Strongly disagree"))+
+  theme(axis.text.x = element_text(angle = 10, vjust = 1, hjust=0.5))+
+  scale_fill_discrete(name = "Attends SL?", labels = c("No", "Yes"))+
+  labs(title="Affordability's effect on Speech Language Therapy(SL) Attendance",
+       x= "Can afford speech therapy sessions?")+
+  theme(plot.margin = unit(c(0, 0, 0, 0), 
+                           "inches"))+
+  theme(plot.title = element_text(size=12),
+        axis.text=element_text(size=10),
+        axis.title=element_text(size=12))
+
+#affordability vs verbal ability
+
+ability<- data_of_int
+ability$NSL_not_affordable_a[71:110]<- abs(ability$NSL_not_affordable_a[71:110]-7)
+ability_affordability<- ability %>% select(Groups_Minimal_Verbal,attends_speech_therapy,
+                                           SL_session_affordability_a,NSL_not_affordable_a)
+afford<- rep(0,110)
+afford[1:70]<- ability_affordability$SL_session_affordability_a[1:70]
+afford[71:110]<- ability_affordability$NSL_not_affordable_a[71:110]
+
+VnonV_affordability<- ability_affordability %>% mutate(
+                          affordability = afford)
+afford_nonVerbal<- VnonV_affordability %>% filter(Groups_Minimal_Verbal==1)
+afford_Verbal <- VnonV_affordability %>% filter(Groups_Minimal_Verbal==0)
+
+
+nver<-c()
+ver<-c()
+agreement<- 1:6
+for(i in 1:6){
+  nver[i]<-dim(afford_nonVerbal %>% filter(affordability==i))[1]
+  ver[i]<- dim(afford_Verbal %>% filter(affordability==i))[1]
+}
+
+affordability_verbal<- data.frame(agreement,nver,ver)
+affordability_verbal<- affordability_verbal %>% pivot_longer(
+  cols=nver:ver,
+  values_to = "frequency",
+  names_to="Verbal_MinimalVerbal"
+)
+
+affordability_verbal$frequency<- ifelse(affordability_verbal$Verbal_MinimalVerbal==1,
+                                           (affordability_verbal$frequency/50)*100,
+                                           (affordability_verbal$frequency/60)*100)
+
+affordability_verbal<- affordability_verbal %>% rename(
+  Percentage = frequency
+)
+
+affordability_verbal$agreement <- factor(affordability_verbal$agreement)
+
+ggplot(data = affordability_verbal, aes(agreement, Percentage,fill = Verbal_MinimalVerbal))+
+  geom_bar(stat="identity", position='dodge')+
+  scale_x_discrete(labels= c("1"="Strongly agree", "2"="Agree",
+                             "3"="Somewhat agree","4"="Somewhat disagree",
+                             "5"="Disagree", "6"="Strongly disagree"))+
+  theme(axis.text.x = element_text(angle = 15, vjust = 1, hjust=0.75))+
+  scale_fill_discrete(name = "Verbal Ability", labels = c("Minimally Verbal", "Verbal"))+
+  labs(title="Affordability's effect on Speech Language Therapy(SL) Attendance",
+       x= "Can afford speech therapy sessions?")+
+  theme(plot.margin = unit(c(0, 0, 0, 0), 
+                           "inches"))+
+  theme(plot.title = element_text(size=12),
+        axis.text=element_text(size=10),
+        axis.title=element_text(size=12))
