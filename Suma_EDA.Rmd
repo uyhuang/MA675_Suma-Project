@@ -1,0 +1,146 @@
+---
+title: "Suma_EDA"
+output: html_document
+date: "2023-10-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(haven)
+library(tidyverse)
+library(ggplot2)
+library(rstanarm)
+library(arm)
+```
+
+## Reading Data
+
+```{r}
+setwd("/restricted/project/msspminh")
+dataset <- read_sav("Most Recent_Mixed Method_Survey_Minimal_Clean.sav")
+```
+
+## Data Cleaning
+
+```{r}
+#removing the demographic information, and filtering for children under 13 
+no_demographics <- dataset %>% filter(Q5_Child_Age<=12) %>% 
+  select(-c(Q2:Q29_6_TEXT))
+
+#renaming variables so its easier for us to parse them at a glance
+#Marking SL and NSL as prefixes so its easier for us to sort those out. 
+#the final character in the names denotes the following:
+#f denotes this is a frequency variable, a = access, q = frequency
+nodemographics<- no_demographics %>% rename(
+               attends_speech_therapy= Q30_speechTx_NoSpeechTx_online_inperson,
+                        SL_days_per_week_f = Q31.SpTx_Weekly,
+                        SL_duration_f = Q33,
+                        SL_goals_awareness_q = Q35,
+                        SL_service_quality_q = Q36,
+                        SL_session_affordability_a = Q37,
+                        SL_parents_can_observe_q= Q38,
+                        SL_receive_home_activities_q = Q39,
+                        SL_material_affordability_a = Q40,
+                        NSL_pre_covid_SL_c = Q43,
+                        NSL_pre_cov_daysperwk_f = Q44,
+                        NSL_month_week_year_pre_cov_sesh_num = Q45,
+                        NSL_doesnt_req_SL_c = Q46,
+                        NSL_not_affordable_a = Q47,
+                        NSL_no_distance_q = Q48,
+                        NSL_not_helping_q = Q49,
+                        NSL_worried_c = Q50,
+                        NSL_therapy_not_good_q = Q51,
+                        NSL_SL_unavailable_child_old_a = Q52
+)
+
+
+#removing the other questions we won't need
+nodemographics <- nodemographics %>% select(-c(Q53_School_No_School:Q65))
+
+#Making all Agree Disagree columns binary 
+#These are columns which split the Strongly Agree-Strongly Disagree scale
+#Into just agree and disagree. They're split as 0= Missing, 1= Agree,
+#2=Disagree, 4 = Not Applicable
+
+agree_disagree<-nodemographics
+agree_disagree[,which(str_detect(colnames(agree_disagree),
+                                 "Agree_Disagree")==TRUE)]<-  ifelse(agree_disagree[,which(str_detect(colnames(nodemographics),
+                                                  "Agree_Disagree")==TRUE)]==1,1,
+                    ifelse(agree_disagree[,which(str_detect(colnames(nodemographics),
+                                        "Agree_Disagree")==TRUE)]%in%c(0,4),NA,0))
+                       
+data_of_interest<- agree_disagree     
+
+#Making Verbal Ability Binary
+
+data_of_interest$Groups_Minimal_Verbal<- ifelse(
+              data_of_interest$Groups_Minimal_Verbal==1,1,0)
+
+#casting as ints
+
+data_of_int<- data_of_interest %>% mutate(
+  Groups_Minimal_Verbal= as.integer(Groups_Minimal_Verbal),
+  attends_speech_therapy= as.integer(attends_speech_therapy),
+  SL_days_per_week_f = as.integer(SL_days_per_week_f),
+  SL_duration_f = as.integer(SL_duration_f),
+  SL_goals_awareness_q = as.integer(SL_goals_awareness_q),
+  SL_service_quality_q = as.integer(SL_service_quality_q),
+  SL_session_affordability_a = as.integer(SL_session_affordability_a),
+  SL_parents_can_observe_q= as.integer(SL_parents_can_observe_q),
+  SL_receive_home_activities_q = as.integer(SL_receive_home_activities_q),
+  SL_material_affordability_a = as.integer(SL_material_affordability_a),
+  NSL_pre_covid_SL_c = as.integer(NSL_pre_covid_SL_c),
+  NSL_pre_cov_daysperwk_f = as.integer(NSL_pre_cov_daysperwk_f),
+  NSL_month_week_year_pre_cov_sesh_num = as.integer(NSL_month_week_year_pre_cov_sesh_num),
+  NSL_doesnt_req_SL_c = as.integer(NSL_doesnt_req_SL_c),
+  NSL_not_affordable_a = as.integer(NSL_not_affordable_a),
+  NSL_no_distance_q = as.integer(NSL_no_distance_q),
+  NSL_not_helping_q = as.integer(NSL_not_helping_q),
+  NSL_worried_c = as.integer(NSL_worried_c),
+  NSL_therapy_not_good_q = as.integer(NSL_therapy_not_good_q),
+  NSL_SL_unavailable_child_old_a = as.integer(NSL_SL_unavailable_child_old_a)
+)
+
+#Splitting into Attending SL  and Not Attending SL
+
+SL_data <- data_of_int %>% filter(attends_speech_therapy!=0)
+
+#removing one observation where someone had answered SL questions but mentioned
+#they weren't going to SL
+
+NSL_data<- data_of_int %>% filter(attends_speech_therapy ==0) %>% filter(
+  is.na(SL_days_per_week_f)==TRUE) %>% select(
+          c(Groups_Minimal_Verbal,NSL_pre_covid_SL_c:NSL_SL_unavailable_child_old_a)
+)
+
+#converting NSL values so they aren't asked in the negative of the other questions
+#It might be worth, when we eventually get to factor analysis or tests of
+#sphericity or chronbach's alpha to not make this conversion and see if the 
+#converions helps the score. 
+NSL_data$NSL_therapy_not_good_q<- abs(NSL_data$NSL_therapy_not_good_q-7)
+
+NSL_data$NSL_not_affordable_a<- abs(NSL_data$NSL_not_affordable_a-7)
+
+NSL_data_no_missing <- NSL_data %>% filter(NSL_not_affordable_a!=0) 
+```
+
+## EDA
+
+#### Histogram of SL
+
+```{r pressure, echo=FALSE}
+par(mfrow = c(2,3))
+hist(SL_data$SL_days_per_week_f,
+     main = "SL days per week")
+hist(SL_data$SL_duration_f,
+     main = "SL duration")
+hist(SL_data$Parentsatisfaction,
+     main = "parents satisfaction")
+hist(SL_data$SL_service_quality_q,
+     main ="SL service quality")
+hist(SL_data$SL_session_affordability_a,
+     main = "SL session affordability")
+hist(SL_data$SL_material_affordability_a,
+     main = "SL material affordability")
+par(mfrow = c(1,1))
+```
