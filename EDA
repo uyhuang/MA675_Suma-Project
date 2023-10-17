@@ -113,3 +113,93 @@ ggplot(data = affordability_verbal, aes(agreement, Percentage,fill = Verbal_Mini
   theme(plot.title = element_text(size=12),
         axis.text=element_text(size=10),
         axis.title=element_text(size=12))
+
+
+
+#days per week of SL vs verbal minimally verbal 
+
+days<- data_of_int
+days_SL <- c(data_of_int$SL_days_per_week_f[1:69],rep(0,41))
+days<-data_of_int %>% mutate(
+                          days_per_wk =days_SL+days$NSL_pre_cov_daysperwk_f
+) %>% select(c(Groups_Minimal_Verbal,days_per_wk))
+
+days_nonVerbal<- days %>% filter(Groups_Minimal_Verbal==1)
+days_Verbal <- days %>% filter(Groups_Minimal_Verbal==0)
+
+
+nver<-c()
+ver<-c()
+days<- 1:7
+for(i in 1:7){
+  nver[i]<-dim(days_nonVerbal %>% filter(days_per_wk==i))[1]
+  ver[i]<- dim(days_Verbal %>% filter(days_per_wk==i))[1]
+}
+
+
+freq_verbal<- data.frame(days,nver,ver)
+freq_verbal<- freq_verbal %>% pivot_longer(
+  cols=nver:ver,
+  values_to = "frequency",
+  names_to="Verbal_MinimalVerbal"
+)
+
+freq_verbal$frequency<- ifelse(freq_verbal$Verbal_MinimalVerbal=="ver",
+                                        (freq_verbal$frequency/50)*100,
+                                        (freq_verbal$frequency/60)*100)
+
+freq_verbal<- freq_verbal %>% rename(
+  Percentage = frequency
+) %>% arrange(desc(days))
+
+freq_verbal$days<- abs(freq_verbal$days-7)
+
+freq_verbal$days <- factor(freq_verbal$days) 
+
+ggplot(data = freq_verbal, aes(days, Percentage,fill = Verbal_MinimalVerbal))+
+  geom_bar(stat="identity", position='dodge')+
+  geom_text(
+    aes(label = paste0(round(Percentage),"%")),
+    colour = "white", size = 3,
+    vjust = 1.5, position = position_dodge(.9)
+  )+
+  scale_fill_discrete(name = "Verbal Ability", labels = c("Minimally Verbal", "Verbal"))+
+  labs(title="Days/Week at Speech Language Therapy and Verbal Ability",
+       x= "Days/week",
+       y="Percentage of Minimal/Verbal (%)")+
+  theme(plot.margin = unit(c(0, 0, 0, 0), 
+                           "inches"))+
+  theme(plot.title = element_text(size=12),
+        axis.text=element_text(size=10),
+        axis.title=element_text(size=12))+theme_minimal()+
+  scale_color_discrete()
+
+# Looking at covariances
+
+#The first approach, I'll just look at SL and NSL separately. I can lump them together at a later stage
+
+#SL
+
+SL_var_data<- SL_data %>% select(SL_goals_awareness_q,
+                             SL_service_quality_q,
+                             SL_session_affordability_a,
+                             SL_parents_can_observe_q,
+                             SL_receive_home_activities_q,
+                             SL_material_affordability_a,
+                             ) 
+
+corr_mat<- round(cor(SL_var_data),2)
+
+corr_mat[upper.tri(corr_mat)]<- NA
+
+corr_mat<- melt(corr_mat)
+
+
+ggplot(data = corr_mat, aes(x=X1, y=X2, fill=value)) + 
+  geom_tile(color= "white")+
+  scale_fill_gradient2(low = "white", high = "#2C860D", 
+                       midpoint = 0, limit = c(0,1), space = "Lab", 
+                     name="Correlation")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  coord_fixed()+geom_text(aes(X1,X2, label = value), color = "black", size = 3)
