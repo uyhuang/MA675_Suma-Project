@@ -1,0 +1,59 @@
+---
+title: "Survey Validation"
+subtitle: "Autism Spectrum Disorder Therapy in India"
+author: "Ajay Krishnakumar,   Amie Thomas, Yang Xiao, Yuchen Huang"
+date: "2023-10-31"
+output: html_document
+---
+
+#Summary
+
+-high level overview of the main points of the paper with minimal details. Includes key findings and recommendations
+
+#Introduction
+
+-brief description of projects objectives and context
+
+-research questions/ goals of analysis defined
+
+#Methodology
+
+-details of data preprocessing steps (data cleaning or transformations)
+
+-statistical methods and techniques used in analysis
+
+#Data description
+
+-summary of data with descriptive statistics, data distributions, data visualizations (tables, charts, graphs
+
+-discuss missing data and how it was handled
+
+#Statistical Analysis with Visuals
+
+-main results of the analysis with relevant visuals
+
+-interpretation of the results in plain language that can be understood by our nontechnical reader Suma
+
+#Discussion
+
+-discuss findings in the context of the research question
+
+-address limitations or assumptions of the analysis
+
+#Recommendations
+
+-practical recommendations based on analysis along with potential actions that can be taken
+
+#Conclusions
+
+-key takeaways from analysis
+
+-reiterate importance of findings and recommendations
+
+#References
+
+-yall know what references are
+
+#Glossary
+
+-technical terms/ jargon used in report with definitions so that our non technical reader Suma can better understand.
