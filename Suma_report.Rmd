@@ -1,7 +1,7 @@
 ---
 title: "Survey Validation"
 subtitle: "Autism Spectrum Disorder Therapy in India"
-author: "Ajay Krishnakumar,   Amie Thomas, Yang Xiao, Yuchen Huang"
+author: "Ajay Krishnakumar, Amie Thomas, Yang Xiao, Yuchen Huang"
 date: "2023-10-31"
 output: html_document
 ---
@@ -34,11 +34,17 @@ output: html_document
 
 -interpretation of the results in plain language that can be understood by our nontechnical reader Suma
 
-#Discussion
+#Overall Findings
 
--discuss findings in the context of the research question
+Regrettably, we cannot say with any degree of certainty whether or not the data collected and the survey which was used to collect them satisfy conditions of construct validity or reliability from a statistical standpoint. This is on the strength of the following facts:
 
--address limitations or assumptions of the analysis
+1) That the survey questions of interest do not on a prima facie basis seem to be asking the same thing. The questions bundled under 'quality' for instance ask a wide variety of things from the respondents. Any measure of reliability for questions that are so obviously different would not itself be reliable. 
+
+2) The loadings on the principal component analysis we conducted and the associated eigenvalues indicate that any measure of reliability would not be reliable or stable (Yurdugul 2008). Further the small loadings and their distribution across separate 'components' would seem to be indicative of the fact that the client's grouping of variables is not valid. Beyond saying that the grouping is not valid, when confronted with individual questions, treated as variables, and considering the fact that the data needs to be split into two groups along the lines of those who attended Speech Language Therapy and those who didn't, the sample size together with the number of survey items for each group leads any statement about surey validity to be inconclusive. 
+
+Any statements as to the validity or reliability of the survey must instead stem from the methodology of the survey, the way it was circulated, the people that might have overseen it, the standards for the field and from peers of the researcher, since statistically no conclusion as to these metrics can be definitively reached. 
+
+There are however, ways in which the client can make data from the survey more suitable for analysis and make any conclusions more sound. These are laid out below. 
 
 #Recommendations
 
