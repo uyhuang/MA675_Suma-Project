@@ -48,7 +48,11 @@ There are however, ways in which the client can make data from the survey more s
 
 #Recommendations
 
--practical recommendations based on analysis along with potential actions that can be taken
+1) It was mentioned by the client, in passing, that certain parts of the data(such as the days per week that children attended Speech language Therapy) might have been coded differently in the data than the way they were collected. It might be best, especially in this case but also generally, to avoid sumamries and codings until the analysis is done and then to explicitly indicate where this is so. 
+
+2) As we've said above, the groupings of 'quality' and 'access' are not necessarily correct across either of the Speech Language and No Speech Languge groups. It might be best to address these questions as separate variables measuring separate things, albeit slightly related. 
+
+3) <Recommendations made on the basis of
 
 #Conclusions
 
